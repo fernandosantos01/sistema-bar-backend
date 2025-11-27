@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ItemComandaRepository extends JpaRepository<ItemComandaModel, UUID> {
-    List<ItemComandaModel> findByComandaId(Long comandaId);
+    List<ItemComandaModel> findByComandaId(UUID comandaId);
 
     @Query(value = """
             SELECT p.nome, SUM(i.quantidade) as total 
