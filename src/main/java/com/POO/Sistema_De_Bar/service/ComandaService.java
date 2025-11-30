@@ -177,4 +177,30 @@ public class ComandaService {
 
         return comandaRepository.save(comanda);
     }
+
+    public void cancelarItem(Long itemId, String motivo) {
+        ItemComandaModel item = itemComandaRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+
+        if (item.getComanda().getStatus() != StatusComanda.ABERTA) {
+            throw new RuntimeException("Não é possível cancelar itens de uma conta fechada.");
+        }
+
+        item.setCancelado(true);
+        item.setMotivoCancelamento(motivo);
+
+        itemComandaRepository.save(item);
+    }
+
+    public ComandaModel atualizarCouvert(Long comandaId, boolean habilitado) {
+        ComandaModel comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
+
+        if (comanda.getStatus() != StatusComanda.ABERTA) {
+            throw new RuntimeException("Não é possível alterar o couvert de uma conta fechada.");
+        }
+
+        comanda.setCouvertHabilitado(habilitado);
+        return comandaRepository.save(comanda);
+    }
 }

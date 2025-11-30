@@ -1,9 +1,6 @@
 package com.POO.Sistema_De_Bar.controller;
 
-import com.POO.Sistema_De_Bar.dto.AbrirMesaDTO;
-import com.POO.Sistema_De_Bar.dto.AdicionarItemDTO;
-import com.POO.Sistema_De_Bar.dto.RegistrarPagamentoDTO;
-import com.POO.Sistema_De_Bar.dto.ResumoContaDTO;
+import com.POO.Sistema_De_Bar.dto.*;
 import com.POO.Sistema_De_Bar.model.ComandaModel;
 import com.POO.Sistema_De_Bar.model.ItemComandaModel;
 import com.POO.Sistema_De_Bar.model.PagamentoModel;
@@ -51,5 +48,20 @@ public class ComandaController {
     public ResponseEntity<ComandaModel> fecharConta(@PathVariable Long id) {
         ComandaModel comandaFechada = comandaService.fecharComanda(id);
         return ResponseEntity.ok(comandaFechada);
+    }
+
+    @DeleteMapping("/itens/{itemId}")
+    public ResponseEntity<Void> cancelarItem(@PathVariable Long itemId, @RequestBody CancelarItemDTO dados) {
+        comandaService.cancelarItem(itemId, dados.motivo());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/couvert")
+    public ResponseEntity<ComandaModel> atualizarCouvert(
+            @PathVariable Long id,
+            @RequestParam boolean habilitado) {
+
+        ComandaModel comandaAtualizada = comandaService.atualizarCouvert(id, habilitado);
+        return ResponseEntity.ok(comandaAtualizada);
     }
 }
