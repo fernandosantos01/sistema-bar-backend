@@ -10,6 +10,9 @@ public record ResumoContaDTO(
         BigDecimal valorGorjetaComida,
         BigDecimal valorGorjetaBebida,
         BigDecimal valorCouvert,
-        BigDecimal totalGeral
+        BigDecimal totalGeral,
+        BigDecimal totalPago,
+        BigDecimal saldoRestante,
+        String status
 ) {
 }

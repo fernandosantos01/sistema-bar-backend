@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class ComandaService {
@@ -20,13 +19,15 @@ public class ComandaService {
     private final ConfiguracaoRepository configuracaoRepository;
     private final MesaRepository mesaRepository;
     private final ProdutoRepository produtoRepository;
+    private final PagamentoRepository pagamentoRepository;
 
-    public ComandaService(ComandaRepository comandaRepository, ItemComandaRepository itemComandaRepository, ConfiguracaoRepository configuracaoRepository, MesaRepository mesaRepository, ProdutoRepository produtoRepository) {
+    public ComandaService(ComandaRepository comandaRepository, ItemComandaRepository itemComandaRepository, ConfiguracaoRepository configuracaoRepository, MesaRepository mesaRepository, ProdutoRepository produtoRepository, PagamentoRepository pagamentoRepository) {
         this.comandaRepository = comandaRepository;
         this.itemComandaRepository = itemComandaRepository;
         this.configuracaoRepository = configuracaoRepository;
         this.mesaRepository = mesaRepository;
         this.produtoRepository = produtoRepository;
+        this.pagamentoRepository = pagamentoRepository;
     }
 
     public ResumoContaDTO calcularContaResumo(Long comandaId) {
@@ -73,6 +74,14 @@ public class ComandaService {
                 .add(gorjetaComida).add(gorjetaBebida)
                 .add(totalCouvert);
 
+        List<PagamentoModel> pagamentos = pagamentoRepository.findByComandaId(comandaId);
+
+        BigDecimal totalPago = pagamentos.stream()
+                .map(PagamentoModel::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal saldoRestante = totalGeral.subtract(totalPago);
+
         return new ResumoContaDTO(
                 itensDTO,
                 subtotalComida,
@@ -80,7 +89,10 @@ public class ComandaService {
                 gorjetaComida,
                 gorjetaBebida,
                 totalCouvert,
-                totalGeral
+                totalGeral,
+                totalPago,
+                saldoRestante,
+                comanda.getStatus().name()
         );
     }
 
@@ -123,4 +135,46 @@ public class ComandaService {
         return itemComandaRepository.save(item);
     }
 
+    public PagamentoModel registrarPagamento(Long comandaId, BigDecimal valor, String formaPagamento) {
+        ComandaModel comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
+
+        if (comanda.getStatus() == StatusComanda.PAGA) {
+            throw new RuntimeException("Esta comanda já está totalmente paga e encerrada.");
+        }
+
+        PagamentoModel pagamento = new PagamentoModel();
+        pagamento.setComanda(comanda);
+        pagamento.setValor(valor);
+        pagamento.setFormaPagamento(formaPagamento);
+
+        return pagamentoRepository.save(pagamento);
+    }
+
+    public ComandaModel fecharComanda(Long comandaId) {
+        ComandaModel comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
+
+        ResumoContaDTO resumo = calcularContaResumo(comandaId);
+        BigDecimal totalAPagar = resumo.totalGeral();
+
+        List<PagamentoModel> pagamentos = pagamentoRepository.findByComandaId(comandaId);
+        BigDecimal totalPago = pagamentos.stream()
+                .map(PagamentoModel::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalPago.compareTo(totalAPagar) < 0) {
+            BigDecimal restante = totalAPagar.subtract(totalPago);
+            throw new RuntimeException("Não é possível fechar a conta. Saldo pendente: R$ " + restante);
+        }
+
+        comanda.setStatus(StatusComanda.PAGA);
+        comanda.setDataFechamento(java.time.LocalDateTime.now());
+
+        MesaModel mesa = comanda.getMesa();
+        mesa.setStatus(StatusMesa.LIVRE);
+        mesaRepository.save(mesa);
+
+        return comandaRepository.save(comanda);
+    }
 }
