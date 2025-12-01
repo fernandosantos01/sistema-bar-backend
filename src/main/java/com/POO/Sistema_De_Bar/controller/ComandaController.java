@@ -50,9 +50,14 @@ public class ComandaController {
         return ResponseEntity.ok(comandaFechada);
     }
 
-    @DeleteMapping("/itens/{itemId}")
-    public ResponseEntity<Void> cancelarItem(@PathVariable Long itemId, @RequestBody CancelarItemDTO dados) {
-        comandaService.cancelarItem(itemId, dados.motivo());
+    @DeleteMapping("/{comandaId}/itens/{itemId}")
+    public ResponseEntity<Void> cancelarItem(
+            @PathVariable Long comandaId,
+            @PathVariable Long itemId,
+            @RequestBody CancelarItemDTO dados) {
+
+        comandaService.cancelarItem(comandaId, itemId, dados.motivo());
+
         return ResponseEntity.noContent().build();
     }
 

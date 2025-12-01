@@ -178,9 +178,13 @@ public class ComandaService {
         return comandaRepository.save(comanda);
     }
 
-    public void cancelarItem(Long itemId, String motivo) {
+    public void cancelarItem(Long comandaId, Long itemId, String motivo) {
         ItemComandaModel item = itemComandaRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+
+        if (!item.getComanda().getId().equals(comandaId)) {
+            throw new RuntimeException("Este item não pertence à comanda informada.");
+        }
 
         if (item.getComanda().getStatus() != StatusComanda.ABERTA) {
             throw new RuntimeException("Não é possível cancelar itens de uma conta fechada.");
