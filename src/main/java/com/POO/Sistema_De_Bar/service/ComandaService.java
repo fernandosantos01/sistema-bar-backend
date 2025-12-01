@@ -49,6 +49,7 @@ public class ComandaService {
             BigDecimal totalItem = item.getPrecoUnitario().multiply(new BigDecimal(item.getQuantidade()));
 
             itensDTO.add(new ItemContaDTO(
+                    item.getId(),
                     item.getProduto().getNome(),
                     item.getPrecoUnitario(),
                     item.getQuantidade(),
