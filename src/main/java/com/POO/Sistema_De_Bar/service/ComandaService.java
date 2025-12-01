@@ -68,7 +68,7 @@ public class ComandaService {
 
         BigDecimal totalCouvert = BigDecimal.ZERO;
         if (comanda.isCouvertHabilitado()) {
-            totalCouvert = config.getValorCovert().multiply(new BigDecimal(comanda.getQtdePessoas()));
+            totalCouvert = comanda.getValorCouvert().multiply(new BigDecimal(comanda.getQtdePessoas()));
         }
 
         BigDecimal totalGeral = subtotalComida.add(subtotalBebida)
@@ -104,11 +104,16 @@ public class ComandaService {
         if (comandaRepository.findByMesaIdAndStatus(mesa.getId(), StatusComanda.ABERTA).isPresent()) {
             throw new RuntimeException("Esta mesa já está ocupada!");
         }
+        ConfiguracaoModel config = configuracaoRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Configuração não encontrada"));
 
         ComandaModel comanda = new ComandaModel();
         comanda.setMesa(mesa);
         comanda.setQtdePessoas(dados.qtdPessoas());
         comanda.setStatus(StatusComanda.ABERTA);
+
+        comanda.setValorCouvert(config.getValorCovert());
 
         mesa.setStatus(StatusMesa.OCUPADA);
         mesaRepository.save(mesa);

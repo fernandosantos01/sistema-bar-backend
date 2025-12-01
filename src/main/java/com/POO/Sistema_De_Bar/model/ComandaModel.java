@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,6 +30,9 @@ public class ComandaModel {
 
     @Column(nullable = false)
     private boolean couvertHabilitado = true;
+
+    @Column(name = "valor_couvert_registrado")
+    private BigDecimal valorCouvert;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
