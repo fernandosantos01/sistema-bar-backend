@@ -213,4 +213,8 @@ public class ComandaService {
         comanda.setCouvertHabilitado(habilitado);
         return comandaRepository.save(comanda);
     }
+
+    public List<ProdutoModel> listarProdutosDisponiveis() {
+        return produtoRepository.findByDisponivelTrue();
+    }
 }

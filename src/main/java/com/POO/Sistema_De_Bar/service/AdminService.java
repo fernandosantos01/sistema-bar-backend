@@ -8,6 +8,8 @@ import com.POO.Sistema_De_Bar.repository.ConfiguracaoRepository;
 import com.POO.Sistema_De_Bar.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AdminService {
     private final ProdutoRepository produtoRepository;
@@ -16,6 +18,10 @@ public class AdminService {
     public AdminService(ProdutoRepository produtoRepository, ConfiguracaoRepository configuracaoRepository) {
         this.produtoRepository = produtoRepository;
         this.configuracaoRepository = configuracaoRepository;
+    }
+
+    public List<ProdutoModel> listarTodosProdutos() {
+        return produtoRepository.findAll();
     }
 
     public ProdutoModel cadastrarProduto(ProdutoDTO dados) {

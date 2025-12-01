@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -16,6 +18,11 @@ public class AdminController {
 
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
+    }
+
+    @GetMapping("/produtos")
+    public ResponseEntity<List<ProdutoModel>> listarTodosProdutos() {
+        return ResponseEntity.ok(adminService.listarTodosProdutos());
     }
 
     @PostMapping("/produtos")
