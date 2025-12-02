@@ -35,9 +35,10 @@ public class AuthenticationController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.senha());
         var auth = authenticationManager.authenticate(usernamePassword);
 
-        var token = tokenService.generateToken((Usuario) Objects.requireNonNull(auth.getPrincipal()));
-
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+        Usuario user = (Usuario) auth.getPrincipal();
+        assert user != null;
+        var token = tokenService.generateToken(user);
+        return ResponseEntity.ok(new LoginResponseDTO(token, user.getRole().name()));
     }
 
     @PostMapping("/register")

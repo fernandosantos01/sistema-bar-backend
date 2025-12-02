@@ -1,8 +1,6 @@
 package com.POO.Sistema_De_Bar.controller;
 
-import com.POO.Sistema_De_Bar.dto.ConfiguracaoDTO;
-import com.POO.Sistema_De_Bar.dto.MesaDTO;
-import com.POO.Sistema_De_Bar.dto.ProdutoDTO;
+import com.POO.Sistema_De_Bar.dto.*;
 import com.POO.Sistema_De_Bar.model.ConfiguracaoModel;
 import com.POO.Sistema_De_Bar.model.MesaModel;
 import com.POO.Sistema_De_Bar.model.ProdutoModel;
@@ -11,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -25,6 +24,11 @@ public class AdminController {
     @GetMapping("/produtos")
     public ResponseEntity<List<ProdutoModel>> listarTodosProdutos() {
         return ResponseEntity.ok(adminService.listarTodosProdutos());
+    }
+
+    @GetMapping("/configuracoes")
+    public ResponseEntity<ConfiguracaoModel> buscarConfiguracao() {
+        return ResponseEntity.ok(adminService.buscarConfiguracao());
     }
 
     @PostMapping("/produtos")
@@ -55,5 +59,22 @@ public class AdminController {
     public ResponseEntity<Void> deletarMesa(@PathVariable Long id) {
         adminService.deletarMesa(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/relatorios/faturamento")
+    public ResponseEntity<RelatorioFaturamentoDTO> getFaturamento(
+            @RequestParam LocalDate inicio,
+            @RequestParam LocalDate fim) {
+        return ResponseEntity.ok(adminService.gerarRelatorioFaturamento(inicio, fim));
+    }
+
+    @GetMapping("/relatorios/itens-mais-vendidos")
+    public ResponseEntity<List<RelatorioItemDTO>> getItensMaisVendidos() {
+        return ResponseEntity.ok(adminService.gerarRelatorioItens(false));
+    }
+
+    @GetMapping("/relatorios/itens-maior-faturamento")
+    public ResponseEntity<List<RelatorioItemDTO>> getItensMaiorFaturamento() {
+        return ResponseEntity.ok(adminService.gerarRelatorioItens(true));
     }
 }

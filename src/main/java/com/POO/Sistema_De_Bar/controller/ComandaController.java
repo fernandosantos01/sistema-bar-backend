@@ -74,7 +74,7 @@ public class ComandaController {
     }
 
     @GetMapping("/mesas")
-    public ResponseEntity<List<MesaModel>> listarMesasAtivas() {
-        return ResponseEntity.ok(comandaService.listarMesasAtivas());
+    public ResponseEntity<List<MesaDashboardDTO>> listarMesasAtivas() {
+        return ResponseEntity.ok(comandaService.listarMesasParaDashboard());
     }
 }

@@ -1,11 +1,9 @@
 package com.POO.Sistema_De_Bar.service;
 
-import com.POO.Sistema_De_Bar.dto.AbrirMesaDTO;
-import com.POO.Sistema_De_Bar.dto.AdicionarItemDTO;
-import com.POO.Sistema_De_Bar.dto.ItemContaDTO;
-import com.POO.Sistema_De_Bar.dto.ResumoContaDTO;
+import com.POO.Sistema_De_Bar.dto.*;
 import com.POO.Sistema_De_Bar.model.*;
 import com.POO.Sistema_De_Bar.repository.*;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -85,6 +83,7 @@ public class ComandaService {
 
         return new ResumoContaDTO(
                 itensDTO,
+                comanda.getMesa().getNumero(),
                 subtotalComida,
                 subtotalBebida,
                 gorjetaComida,
@@ -93,10 +92,12 @@ public class ComandaService {
                 totalGeral,
                 totalPago,
                 saldoRestante,
-                comanda.getStatus().name()
+                comanda.getStatus().name(),
+                comanda.isCouvertHabilitado()
         );
     }
 
+    @Transactional
     public ComandaModel abrirComanda(AbrirMesaDTO dados) {
         MesaModel mesa = mesaRepository.findByNumeroAndAtivaTrue(dados.numeroMesa())
                 .orElseThrow(() -> new RuntimeException("Mesa não encontrada!"));
@@ -121,6 +122,7 @@ public class ComandaService {
         return comandaRepository.save(comanda);
     }
 
+    @Transactional
     public ItemComandaModel adicionarItem(Long comandaId, AdicionarItemDTO dados) {
         ComandaModel comanda = comandaRepository.findById(comandaId)
                 .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
@@ -141,6 +143,7 @@ public class ComandaService {
         return itemComandaRepository.save(item);
     }
 
+    @Transactional
     public PagamentoModel registrarPagamento(Long comandaId, BigDecimal valor, String formaPagamento) {
         ComandaModel comanda = comandaRepository.findById(comandaId)
                 .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
@@ -157,6 +160,7 @@ public class ComandaService {
         return pagamentoRepository.save(pagamento);
     }
 
+    @Transactional
     public ComandaModel fecharComanda(Long comandaId) {
         ComandaModel comanda = comandaRepository.findById(comandaId)
                 .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
@@ -184,6 +188,7 @@ public class ComandaService {
         return comandaRepository.save(comanda);
     }
 
+    @Transactional
     public void cancelarItem(Long comandaId, Long itemId, String motivo) {
         ItemComandaModel item = itemComandaRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item não encontrado"));
@@ -202,6 +207,7 @@ public class ComandaService {
         itemComandaRepository.save(item);
     }
 
+    @Transactional
     public ComandaModel atualizarCouvert(Long comandaId, boolean habilitado) {
         ComandaModel comanda = comandaRepository.findById(comandaId)
                 .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
@@ -218,7 +224,26 @@ public class ComandaService {
         return produtoRepository.findByDisponivelTrue();
     }
 
-    public List<MesaModel> listarMesasAtivas() {
-        return mesaRepository.findByAtivaTrue();
+    public List<MesaDashboardDTO> listarMesasParaDashboard() {
+        List<MesaModel> mesas = mesaRepository.findByAtivaTrue();
+        List<MesaDashboardDTO> dtos = new ArrayList<>();
+
+        for (MesaModel mesa : mesas) {
+            Long comandaId = null;// Se a mesa estiver ocupada, descobrimos qual é a comanda aberta dela
+            if (mesa.getStatus() == StatusMesa.OCUPADA) {
+                var comandaOp = comandaRepository.findByMesaIdAndStatus(mesa.getId(), StatusComanda.ABERTA);
+                if (comandaOp.isPresent()) {
+                    comandaId = comandaOp.get().getId();
+                }
+            }
+
+            dtos.add(new MesaDashboardDTO(
+                    mesa.getId(),
+                    mesa.getNumero(),
+                    mesa.getStatus(),
+                    comandaId
+            ));
+        }
+        return dtos;
     }
 }

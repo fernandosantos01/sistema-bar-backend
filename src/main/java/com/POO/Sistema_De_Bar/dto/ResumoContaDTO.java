@@ -5,6 +5,7 @@ import java.util.List;
 
 public record ResumoContaDTO(
         List<ItemContaDTO> itens,
+        Integer mesaNumero,
         BigDecimal subtotalComida,
         BigDecimal subtotalBebida,
         BigDecimal valorGorjetaComida,
@@ -13,6 +14,7 @@ public record ResumoContaDTO(
         BigDecimal totalGeral,
         BigDecimal totalPago,
         BigDecimal saldoRestante,
-        String status
+        String status,
+        boolean couvertHabilitado
 ) {
 }

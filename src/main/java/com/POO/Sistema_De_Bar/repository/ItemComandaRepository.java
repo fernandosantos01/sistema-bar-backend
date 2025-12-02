@@ -11,12 +11,12 @@ public interface ItemComandaRepository extends JpaRepository<ItemComandaModel, L
     List<ItemComandaModel> findByComandaId(Long comandaId);
 
     @Query(value = """
-            SELECT p.nome, SUM(i.quantidade) as total 
-            FROM itens_comanda i 
-            JOIN produtos p ON i.produto_id = p.id 
-            GROUP BY p.nome 
-            ORDER BY total DESC
-            """, nativeQuery = true)
-    List<Object[]> findItensMaisVendidos();
+        SELECT p.nome, SUM(i.quantidade) as qtd, SUM(i.quantidade * i.preco_unitario) as total
+        FROM itens_comanda i
+        JOIN produtos p ON i.produto_id = p.id
+        WHERE i.cancelado = false
+        GROUP BY p.id, p.nome
+        """, nativeQuery = true)
+    List<Object[]> gerarRelatorioVendas();
 
 }
